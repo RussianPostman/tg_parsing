@@ -35,16 +35,14 @@ def date_time_format(all_date: str):
     
     date = ' '.join(date_list).strip()
     _time = date_time[1].strip()
-    print(date)
-    print(_time)
     return date, _time
 
 
 def main(
         tg_slug: str = 'nashturist',
-        page: int = 0,
-        year: int = 22,
-        months: int = 7
+        page: str = '0',
+        year: str = '22',
+        months: str = '7'
         ):
     """
     Получить упомянания
@@ -106,7 +104,7 @@ def main(
     text_list = soup.find_all('li')
 
     input_list = []
-
+    
     for i in text_list:
         i: Tag    
         inside_dict = {}
@@ -135,12 +133,11 @@ def main(
     return input_list 
 
 
-def mentions(year: int = 22, months: int = 8):
+def mentions(tg_slug: str, year: str = '22', months: str = '8'):
     count = 0
     out_list = []
     while True:
-        data = main(page=count, year=year, months=months)
-        pprint(data)
+        data = main(tg_slug=tg_slug, page=count, year=year, months=months)
         if not data:
             return out_list
         for i in data:
