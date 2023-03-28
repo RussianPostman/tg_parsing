@@ -1,13 +1,8 @@
-import asyncio
-import aiohttp
-
-from scrap_data.advertising_effective import all_request, get_all_creative
+from bs4 import BeautifulSoup
+import requests
 
 
-async def make_request(url):
-    out_list = []
-    out_list.append(url)
-
+def request(url: str):
     cookies = {
         '_tgstat_csrk': 'cd2a6ef1320042a5ef090f4b891af3bab8697ab37dfa0d648649503aaced57c2a%3A2%3A%7Bi%3A0%3Bs%3A12%3A%22_tgstat_csrk%22%3Bi%3A1%3Bs%3A32%3A%22qLOWBnqBcSrZRlgXB27gERXQ_iVbwa_f%22%3B%7D',
         '_ym_uid': '1677178234702463738',
@@ -37,24 +32,48 @@ async def make_request(url):
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
     }
 
-    print(url)
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f'https://tgstat.ru{url}', cookies=cookies, headers=headers) as response:
-            return response, url
+    return requests.get(f'https://tgstat.ru{url}', cookies=cookies, headers=headers)
+    
 
 
-async def aio_main(tg_slug):
-    url_list = get_all_creative(all_request(tg_slug))
-    reqs = []
-    for url in url_list:
-        r = await make_request(url)
-        reqs.append(r)
+def one_post_parser(url: str) -> list[str]:
 
-    print('!!!!!!!!!!!')
-    print(reqs)
-    # for url, result in results:
-    #     print(...)
+    response = request(url)
+    output_list = []
+    
 
+    soup = BeautifulSoup(response.text, 'html.parser')
 
-if __name__ == "__main__":
-    asyncio.run(aio_main('nashturist'))
+    # with open(f"{url.replace('/', '_')}.html", "w", encoding="utf-8") as file:
+    #     file.write(str(soup))
+    
+    table = soup.find('div', 'modal-content bg-transparent')
+
+    img_list = ''
+    pictures = table.find_all('img')
+    for pictur in pictures:
+        url: str = pictur.get('src')
+        if url.startswith('https'):
+            img_list += f'{url}\n '
+    output_list.append(img_list)
+    
+    text = table.find('div', 'post-text')
+    output_list.append(text.text)
+
+    views = table.find_all(
+        'a',
+        'btn btn-light btn-rounded py-05 px-13 mr-1 popup_ajax font-12 font-sm-13'
+        )
+    output_list.append(views[0].text.strip())
+    # shared_in_public
+    output_list.append(views[1].text.strip())
+    all_shared = table.find(
+        'span',
+        'btn btn-light btn-rounded py-05 px-13 mr-1 font-12 font-sm-13'
+        )
+    output_list.append(all_shared.text.strip())
+
+    return output_list
+
+if __name__ == '__main__':
+    one_post_parser(request('/channel/@nashturist/14127'))
