@@ -1,7 +1,7 @@
 __all__ = [
-    'read',
-    'write'
+    'read_channels',
+    'write_stat'
 ]
 
-from .read import read
-from .write import write
+from .read import read_channels
+from .write import write_stat

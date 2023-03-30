@@ -1,3 +1,4 @@
+from pprint import pprint
 import gspread
 from google.oauth2.service_account import Credentials
 import numpy as np
@@ -21,14 +22,12 @@ def get_creds():
 
 def get_or_create_ws(
         name: str,
-        heads: list[str],
         rows: int = 3,
         cols: int = 10
         ) -> gspread.Worksheet:
     """
     Создать гугл таблицу
     :name:
-    :heads:
     :rows:
     :cols:
     """
@@ -42,20 +41,20 @@ def get_or_create_ws(
     except gspread.exceptions.WorksheetNotFound:
         ss.add_worksheet(name, rows, cols)
         new_worksheet = ss.worksheet(name)
-    return new_worksheet.append_row(heads)
+    
+    return new_worksheet
 
 
-def write(tg_slug: str, data: list[dict]):
+def write_stat(tg_slug: str, data: list[dict]):
     write_list = []
 
-    heads = data[0].keys()
-    worksheet = get_or_create_ws(tg_slug, heads)
+    heads = list(data[0].keys())
+    write_list.append(heads)
+    worksheet = get_or_create_ws(tg_slug)
 
     for dey in data:
-        value_list = []
-        for _, value in dey:
-            value_list.append(value)
-        write_list.append(value_list)
-    
-    array = np.array(write_list)
-    worksheet.update('A2', array.tolist())
+        values = list(dey.values())
+        write_list.append(values)
+
+
+    worksheet.update(write_list)

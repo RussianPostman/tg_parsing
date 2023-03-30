@@ -17,13 +17,13 @@ def get_creds():
     gc = gspread.authorize(credentials)
     return gc
 
-def read():
+def read_channels() -> list[str]:
     gc = get_creds()
     sht = gc.open_by_url(URL)
     ws = sht.worksheet('Ввод')
     channels = ws.col_values(1)
-    print(channels)
+    return channels
 
 
 if __name__ == '__main__':
-    read()
+    read_channels()

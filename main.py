@@ -11,7 +11,7 @@ from scrap_data import post_reach, qotes_chart, advertising_reach, \
     err_chart, subscribers_chart
 from scrap_data.attracting_subscribers import mentions
 from scrap_data.advertising_effective import one_post_parser
-from google_sheets import read, write
+from google_sheets import read_channels, write_stat
 
 
 def get_mentions(tg_slug: str):
@@ -29,6 +29,10 @@ def synchronization(
         main_list: list[dict],
         value: int
         ):
+    
+    for day in main_list:
+        day[value] = ''
+
     for i in inlist:
         for day in main_list:
             if day.get('date') == i.get('tt'):
@@ -46,10 +50,10 @@ def custom_sync(
         for day in main_list:
             if day.get('date') == i.get('date'):
                 text = (
-                    f'| {i.get("tg_name")} - {i.get("tg_slug")} {i.get("subscribers")} '
-                    + f' подпистчиков {i.get("action")}'
+                    f' - {i.get("tg_name")} - ({i.get("tg_slug")} {i.get("subscribers")} '
+                    + f' подпистчиков), \n {i.get("action")}'
                     + f'{i.get("date")} в {i.get("time")}'
-                    + f' ссылка: \n{i.get("post_url")} |\n'
+                    + f' ссылка: \n{i.get("post_url")}\n'
                     )
                 if dau_value := day.get(value):
                     day[value] = dau_value + text
@@ -110,17 +114,13 @@ def file_write(tg_slug, w_list):
             file_writer.writerow(i)
 
 
-def main_xlsx():
-    data = one_post_parser('/channel/@nashturist/14127')
-    wb = Workbook()
-    ws: Worksheet = wb.active
-    ws.append(data)
-    wb.save("TreeData.xlsx")
-
-
-# def main_gs():
-
+def main_gs():
+    channels = read_channels()
+    for channel in channels:
+        data = main_csv(channel)
+        pprint(data)
+        write_stat(channel, data)
 
 
 if __name__ == '__main__':
-    pprint(main_csv('nashturist'))
+    main_gs()

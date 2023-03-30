@@ -1,10 +1,6 @@
-from datetime import datetime
 from pprint import pprint
-import time
 import requests
-from requests_html import HTMLSession
 from bs4 import BeautifulSoup
-from bs4.element import Tag
 
 
 def all_request(
